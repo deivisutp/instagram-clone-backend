@@ -10,6 +10,6 @@ const routes = Router();
 
 routes.post("/", ValidationAuth.login, AuthController.login);
 
-routes.post("/me", authMiddleware, redisMiddleware, cache_me, AuthController.me);
+routes.get("/me", authMiddleware, redisMiddleware, cache_me, AuthController.me);
 
 module.exports = routes;
