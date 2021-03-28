@@ -23,9 +23,9 @@ module.exports = {
         if (!errors.isEmpty()) return res.status(400).json({ errors: errors });
 
         let user = await User.findOne({ where: { username } });
-        if (!user) return res.status(400).send({ message: "Usuário não existe, verifique suas credenciais" });
+        if (!user) return res.status(400).send({ message: "User does not exists, check your credentials" });
 
-        if (! await passwordCompare(password, user.password)) return res.status(400).send({ message: "Credencial inválida" });
+        if (! await passwordCompare(password, user.password)) return res.status(400).send({ message: "Invalid credential" });
 
         const payload = { id: user.id, username: user.username };
         const token = generateToken(payload);
