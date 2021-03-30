@@ -77,7 +77,6 @@ module.exports = {
                 isLiked = like.user_id == req.userId;
             });
 
-            console.log("Teste");
             return { isAuthor, isLiked, photo };
         });
 
