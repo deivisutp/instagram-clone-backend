@@ -1,11 +1,13 @@
 const fs = require("fs");
 const path = require("path");
 const { promisify } = require("util");
-
+const aws = require("aws-sdk");
 const Sequelize = require("sequelize");
 
 const Photo = require("../models/Photo");
 const Like = require("../models/Like");
+
+const s3 = new aws.S3();
 
 module.exports = {
     async destroy(req, res) {
@@ -19,10 +21,25 @@ module.exports = {
         if (photo.user_id !== req.userId) return res.status(400).send({ message: "Usuário não autorizado" });
 
         try {
-            if (fs.existsSync(path.resolve(__dirname, "..", "..", "tmp", "uploads", key))) {
-                promisify(fs.unlink)(path.resolve(__dirname, "..", "..", "tmp", "uploads", key));
+            if (process.env.STORAGE_TYPE === "s3") {
+                s3
+                    .deleteObject({
+                        Bucket: process.env.BUCKET_NAME,
+                        Key: key
+                    })
+                    .promise()
+                    .then(response => {
+                        console.log(response.status);
+                    })
+                    .catch(response => {
+                        console.log(response.status);
+                    });
             } else {
-                return res.status(400).send({ message: "Arquivo não encontrado" });
+                if (fs.existsSync(path.resolve(__dirname, "..", "..", "tmp", "uploads", key))) {
+                    promisify(fs.unlink)(path.resolve(__dirname, "..", "..", "tmp", "uploads", key));
+                } else {
+                    return res.status(400).send({ message: "Arquivo não encontrado" });
+                }
             }
         } catch (error) {
             throw error;
@@ -84,16 +101,14 @@ module.exports = {
     },
 
     async store(req, res) {
-        const { filename: key } = req.file;
+        const { key, location: url = "" } = req.file;
         const { body } = req.body;
-
-        const url = `${process.env.APP_URL}/files/${key}`;
 
         const photoCreated = await Photo.create({
             user_id: req.userId,
             body,
             key,
-            photo_url: url
+            photo_url: url || `${process.env.APP_URL}/files/${key}`
         });
 
         const photo = await Photo.findByPk(photoCreated.id, {

@@ -4,7 +4,7 @@ const { validationResult } = require("express-validator");
 const fs = require("fs");
 const path = require("path");
 const { promisify } = require("util");
-
+const aws = require("aws-sdk");
 
 const User = require("../models/User");
 const Photo = require("../models/Photo");
@@ -13,6 +13,8 @@ const Follow = require("../models/Follow");
 const PasswordHash = require("./utils/passwordHash");
 const passwordCompare = require("./utils/passwordCompare");
 const generateToken = require("./utils/generateToken");
+
+const s3 = new aws.S3();
 
 module.exports = {
     async show(req, res) {
@@ -137,29 +139,38 @@ module.exports = {
     },
 
     async updateAvatar(req, res) {
-        const { filename: key } = req.file;
+        const { key, location: url = "" } = req.file;
 
-        console.log(req.file);
-
-        if (fs.existsSync(path.resolve(__dirname, "..", "..", "tmp", "uploads", req.query.key))) {
-            promisify(fs.unlink)(
-                path.resolve(__dirname, "..", "..", "tmp", "uploads", req.query.key)
-            );
+        if (process.env.STORAGE_TYPE === "s3") {
+            s3
+                .deleteObject({
+                    Bucket: process.env.BUCKET_NAME,
+                    Key: key
+                })
+                .promise()
+                .then(response => {
+                    console.log(response.status);
+                })
+                .catch(response => {
+                    console.log(response.status);
+                });
         } else {
-            return res.status(400).send({ message: "Arquivo não encontrado" });
+            if (fs.existsSync(path.resolve(__dirname, "..", "..", "tmp", "uploads", key))) {
+                promisify(fs.unlink)(path.resolve(__dirname, "..", "..", "tmp", "uploads", key));
+            } else {
+                return res.status(400).send({ message: "Arquivo não encontrado" });
+            }
         }
-
-        const url = `${process.env.APP_URL}/files/${key}`;
 
         await User.update({
             key,
-            avatar_url: url
+            avatar_url: url || `${process.env.APP_URL}/files/${key}`
         },
             {
                 where: { id: req.userId }
             }
         );
 
-        return res.json({ avatar_url: url });
+        return res.json({ avatar_url: url || `${process.env.APP_URL}/files/${key}` });
     }
 }
