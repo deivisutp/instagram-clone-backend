@@ -16,6 +16,8 @@ Like.init(connection);
 Comment.init(connection);
 Follow.init(connection);
 
+//Consign
+
 //Associations
 User.associate(connection.models);
 Photo.associate(connection.models);
