@@ -24,7 +24,7 @@ Backend:
 - bcryptjs - To encrypt the sensive information;
 - Amazon S3 - To store our files and photos;
 
-Frontend and Backend are hosted on Heroku:
+Frontend and Backend are hosted on Heroku and you can use the app:
 https://regional-photogram-front.herokuapp.com/
 
 --
