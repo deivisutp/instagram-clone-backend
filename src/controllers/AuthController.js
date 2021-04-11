@@ -11,7 +11,7 @@ module.exports = {
             attributes: ["id", "username", "name", "avatar_url"]
         });
 
-        req.redis.setex(req.userId, 3600, JSON.stringify(user));
+        //req.redis.setex(req.userId, 3600, JSON.stringify(user));  --Retirado Redis
 
         return res.json(user);
     },
