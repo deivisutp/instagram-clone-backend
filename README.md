@@ -3,7 +3,7 @@
 ## Demo 📸
 
 <div align="center" >
-  <img src="./github/photogram.gif" alt="demo-web" height="425">
+  <img src="./github/photogram3.gif" alt="demo-web" height="425">
 </div>
 
 Photogram features:
