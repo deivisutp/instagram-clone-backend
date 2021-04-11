@@ -141,20 +141,7 @@ module.exports = {
     async updateAvatar(req, res) {
         const { key, location: url = "" } = req.file;
 
-        if (process.env.STORAGE_TYPE === "s3") {
-            s3
-                .deleteObject({
-                    Bucket: process.env.BUCKET_NAME,
-                    Key: key
-                })
-                .promise()
-                .then(response => {
-                    console.log(response.status);
-                })
-                .catch(response => {
-                    console.log(response.status);
-                });
-        } else {
+        if (!process.env.STORAGE_TYPE === "s3") {
             if (fs.existsSync(path.resolve(__dirname, "..", "..", "tmp", "uploads", key))) {
                 promisify(fs.unlink)(path.resolve(__dirname, "..", "..", "tmp", "uploads", key));
             } else {
